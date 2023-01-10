@@ -67,29 +67,48 @@ function toggleDataFields() {
     return document.getElementById('addMatrixCell').click();
   }
 }
- 
-function fncHighlightCell(){
+const g_arrFormRowCols = [];
+function fncHighlightCell(a_cntlKeyPressed){
   let intCol = document.getElementById('matrixCellColNum').value;
   let intRow = document.getElementById('matrixCellRowNum').value;
   if (intRow.length < 1 || intCol.length < 1) {
     return;
   }
-  let arrMatrixTable = document.getElementsByName('tdWorkingTableCell');
-  for (let i=0; i < arrMatrixTable.length; i++) {
+  if (!a_cntlKeyPressed) {
+    let arrMatrixTable = document.getElementsByName('tdWorkingTableCell');
+    for (let i=0; i < arrMatrixTable.length; i++) {
       arrMatrixTable[i].style.border="thin solid white";
+      g_arrFormRowCols.length  = 0;
+    }
   }
-
+  let objFormCol = {
+    "row": intRow,
+    "column": intCol
+   }
+  g_arrFormRowCols.push(objFormCol);
+   
+  document.getElementById('lstEditRowColumns').value=JSON.stringify(g_arrFormRowCols);
+   
   document.getElementById('tdWorkingTableCellId' + intRow + intCol)
         .style.border="thin solid red"; 
   document.querySelector('#matrixCellDataType').value = 
                 document.getElementById('tdWorkingTableCellId' + intRow + intCol).getAttribute("data-dataType");
                 
 }
+
+function isKeyPressed(event) {
+  let text = "";
+  if (event.ctrlKey) {
+    return true;
+  } else {
+   return false;
+  }
+}
       
-function fncSetSelect(g_intRow, g_intCol){
+function fncSetSelect(g_intRow, g_intCol,a_cntlKeyPressed){
   document.getElementById('matrixCellRowNum').value=g_intRow;
   document.getElementById('matrixCellColNum').value=g_intCol;
-  fncHighlightCell()
+  fncHighlightCell(a_cntlKeyPressed)
 }
 function fncSubmitForm(a_strTransaction, a_intRowOrCol) {
   fncFillRequiredCellsToPassEdit();

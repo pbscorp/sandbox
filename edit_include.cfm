@@ -9,7 +9,12 @@
 <!--- 		  			<cfdump  var="#variables.arrStQuestionMatrices#"> --->
 						<cfoutput>
 							<cfset errors = arrayNew(1)>
+							<cfset aryStcEditRowColumn = arrayNew(1)>
 							<form method="post" name="mainSubNav" id="mainSubNav">
+							<cfif isDefined('form.lstEditRowColumns') AND len(form.lstEditRowColumns)>
+								<cfset aryStcEditRowColumn = deserializeJSON(form.lstEditRowColumns)>
+								<!-- <cfdump var="#aryStcEditRowColumn#"> -->
+							</cfif>
 							<div id="matricesOptions">
 								<cfif structKeyExists(form, "deleteMatrixTable") AND NOT arrayLen(errors)>
 										<cfset session.arrStQuestionMatrices = arrayNew(1)>
@@ -36,9 +41,9 @@
 											<cfset variables.arrStQuestionMatrices = arrayNew(1)>
 									</cfif>
 
-								<!--- 	<cfdump  var="#variables.arrStQuestionMatrices#">
+								<!--- <cfdump  var="#variables.arrStQuestionMatrices#">
 									<cfdump  var="#arraylen(variables.arrStQuestionMatrices)#">
-									 --->
+										 --->
 								<cfif arraylen(variables.arrStQuestionMatrices) LT 1>
 									<table border="0">
 										<tr><td><font face="arial" size="2">Number of rows:</font></td>
@@ -59,18 +64,7 @@
 								<cfelse>
 
 								<cfif structKeyExists(form, "addMatrixCell") AND NOT arrayLen(errors)><!--- if no errors, add cell to arrStQuestionMatrices --->
-									<cfset intArryKey = oAnswerMatrices.getArryKey(form.matrixCellRowNum, form.matrixCellColNum)>
-									<cfset variables.arrStQuestionMatrices[intArryKey]["rowNum"] = form.matrixCellRowNum>
-									<cfset variables.arrStQuestionMatrices[intArryKey]["colNum"] = form.matrixCellColNum>
-									<cfset variables.arrStQuestionMatrices[intArryKey]["cellDataType"] = form.matrixCellDataType>
-									<cfif form.matrixCellDataType EQ "title">
-										<cfset variables.arrStQuestionMatrices[intArryKey]["cellTitle"] = form.matrixCellTitle>
-									<cfelse>
-										<cfset variables.arrStQuestionMatrices[intArryKey]["cellTitle"] = " ">
-									</cfif>
-									<cfset session.arrStQuestionMatrices = variables.arrStQuestionMatrices>
-									<!--- reset form fields --->
-									<cfset form.matrixCellDataType = "">
+									<cfset oAnswerMatrices.updateTableCell(aryStcEditRowColumn, form.matrixCellDataType, form.matrixCellTitle)>
 								</cfif>
             <table border="0" id="matrixTable">
               <tr><td><font face="arial" size="2">Row Number:</font></td>
@@ -120,7 +114,9 @@
 														id="addMatrixColumn" value="">
 										<input type="submit" name="deleteMatrixColumn"
 														id="deleteMatrixColumn" value="">
-								</span>
+										<input type="hidden" name="lstEditRowColumns"
+														id="lstEditRowColumns" value="">
+				</span>
 								</td>
 								<td><input vspace="2px" hspace="3" type="submit" 
 									onClick="return fncConfirmDeleteTable();" name="deleteMatrixTable" value="Delete Table" class="buttnLg">
@@ -196,8 +192,9 @@
 													<td 
 															id = "tdWorkingTableCellId#currRowNum##currCellNum #"
 															name = "tdWorkingTableCell" data-dataType = 
-																		"#variables.arrStQuestionMatrices[i]['cellDataType']#" 
-															onClick="fncSetSelect(#currRowNum#, #currCellNum#)"
+																		"#variables.arrStQuestionMatrices[i]['cellDataType']#"
+															onmousedown="g_cntlKeyPressed = isKeyPressed(event);"
+															onClick="fncSetSelect(#currRowNum#, #currCellNum#, g_cntlKeyPressed)"
 														<cfif (structKeyExists(form, "addMatrixRow") AND
 																			form.addMatrixRow + 1 == arrStQuestionMatrices[i]['rowNum'])  OR
 																(structKeyExists(form, "addMatrixColumn") AND

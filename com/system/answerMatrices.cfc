@@ -99,6 +99,24 @@
 		</cfquery>
   </cffunction>
 
+  <cffunction name="updateTableCell" access="public" output="false" returntype="any">
+    <cfargument name="aryStcEditRowColumn" type="array" required="true" />
+    <cfargument name="matrixCellDataType" type="string" required="true" />
+    <cfargument name="matrixCellTitle" type="string" required="true" />
+      <cfset variables.arrStQuestionMatrices = session.arrStQuestionMatrices>
+        <cfloop  from="1" to="#arrayLen(aryStcEditRowColumn)#" index="i">
+          <cfset intArryKey = getArryKey(arguments.aryStcEditRowColumn[i].row, arguments.aryStcEditRowColumn[i].column)>
+          <cfset variables.arrStQuestionMatrices[intArryKey]["cellDataType"] = arguments.matrixCellDataType>
+          <cfif arguments.matrixCellDataType EQ "title">
+            <cfset variables.arrStQuestionMatrices[intArryKey]["cellTitle"] = arguments.matrixCellTitle>
+          <cfelse>
+            <cfset variables.arrStQuestionMatrices[intArryKey]["cellTitle"] = " ">
+          </cfif>
+        </cfloop>
+      <cfset session.arrStQuestionMatrices = variables.arrStQuestionMatrices>
+  </cffunction>
+
+
   <cffunction name="getColumnCount" access="public" output="false" returntype="numeric">
     <cfset intColCount = structFind(session.arrStQuestionMatrices[arrayLen(session.arrStQuestionMatrices)], 'colNum')>
     <cfreturn intColCount>
