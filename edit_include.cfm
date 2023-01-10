@@ -199,7 +199,7 @@
 																			form.addMatrixRow + 1 == arrStQuestionMatrices[i]['rowNum'])  OR
 																(structKeyExists(form, "addMatrixColumn") AND
 																			form.addMatrixColumn + 1 == arrStQuestionMatrices[i]['colNum'])>
-															style="color:green;background-color: ccc;font-weight:bold;cursor: pointer;"
+															style="background-color: ccc;font-weight:bold;cursor: pointer;"
 														<cfelse>
 															style = "cursor: pointer;"
 														</cfif>>

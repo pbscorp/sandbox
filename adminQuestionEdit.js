@@ -77,6 +77,7 @@ function fncHighlightCell(a_cntlKeyPressed){
   if (!a_cntlKeyPressed) {
     let arrMatrixTable = document.getElementsByName('tdWorkingTableCell');
     for (let i=0; i < arrMatrixTable.length; i++) {
+      arrMatrixTable[i].style.backgroundColor="white";
       arrMatrixTable[i].style.border="thin solid white";
       g_arrFormRowCols.length  = 0;
     }
