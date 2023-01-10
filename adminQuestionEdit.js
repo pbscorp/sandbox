@@ -67,19 +67,6 @@ function toggleDataFields() {
     return document.getElementById('addMatrixCell').click();
   }
 }
- function confirmDeteteTable() {
-  fncFillRequiredCellsToPassEdit();
-  if (!confirm('Are you sure you wish to delete the working-table?') ) {
-    return false;
-  }
-  function fncFillRequiredCellsToPassEdit() {
-    document.getElementById('matrixCellRowNum').value = 1;
-    document.getElementById('matrixCellColNum').value = 1;
-    document.querySelector('#matrixCellDataType').value = "title";
-  }
-  return true;
-}
-
  
 function fncHighlightCell(){
   let intCol = document.getElementById('matrixCellColNum').value;
@@ -103,4 +90,27 @@ function fncSetSelect(g_intRow, g_intCol){
   document.getElementById('matrixCellRowNum').value=g_intRow;
   document.getElementById('matrixCellColNum').value=g_intCol;
   fncHighlightCell()
+}
+function fncSubmitForm(a_strTransaction, a_intRowOrCol) {
+  fncFillRequiredCellsToPassEdit();
+  if (a_strTransaction.indexOf('delete') > -1) {
+    if (!confirm('Confirm transaction ' + a_strTransaction) ) {
+      return false;
+    }
+  }
+  document.getElementById(a_strTransaction).value=a_intRowOrCol;
+  document.getElementById(a_strTransaction).click();
+}
+
+function fncConfirmDeleteTable() {
+  fncFillRequiredCellsToPassEdit();
+  if (!confirm('Are you sure you wish to delete the working-table?') ) {
+    return false;
+  }
+  return true;
+}
+function fncFillRequiredCellsToPassEdit() {
+  document.getElementById('matrixCellRowNum').value = 1;
+  document.getElementById('matrixCellColNum').value = 1;
+  document.querySelector('#matrixCellDataType').value = "title";
 }

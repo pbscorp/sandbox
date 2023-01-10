@@ -11,19 +11,34 @@
 							<cfset errors = arrayNew(1)>
 							<form method="post" name="mainSubNav" id="mainSubNav">
 							<div id="matricesOptions">
-								<cfif structKeyExists(form, "deleteMatrixTable") AND NOT arrayLen(errors)><!--- if no errors, add arrStQuestionMatrices --->
-								
-									<cfset session.arrStQuestionMatrices = arrayNew(1)>
-								</cfif>
-									<cfif structKeyExists(form, "addMatrixTable") AND NOT arrayLen(errors)><!--- if no errors, add arrStQuestionMatrices --->
-										<cfset variables.arrStQuestionMatrices = oAnswerMatrices.createNewTable(form.matrixCellTotalRows, form.matrixCellTotalCols)>
+								<cfif structKeyExists(form, "deleteMatrixTable") AND NOT arrayLen(errors)>
+										<cfset session.arrStQuestionMatrices = arrayNew(1)>
+										<cfset variables.arrStQuestionMatrices = arrayNew(1)>
+								<cfelseif structKeyExists(form, "addMatrixTable") AND NOT arrayLen(errors)>
+										<cfset variables.arrStQuestionMatrices = 
+													oAnswerMatrices.createNewTable(form.matrixCellTotalRows, form.matrixCellTotalCols)>
 										<cfset session.arrStQuestionMatrices = variables.arrStQuestionMatrices>
+								<cfelseif structKeyExists(form, "addMatrixRow") AND NOT arrayLen(errors)>
+									<cfset variables.arrStQuestionMatrices = oAnswerMatrices.insertTableRow(form.addMatrixRow)>
+									<cfset session.arrStQuestionMatrices = variables.arrStQuestionMatrices>
+								<cfelseif structKeyExists(form, "deleteMatrixRow") AND NOT arrayLen(errors)>
+									<cfset variables.arrStQuestionMatrices = oAnswerMatrices.deleteTableRow(form.deleteMatrixRow)>
+									<cfset session.arrStQuestionMatrices = variables.arrStQuestionMatrices>
+								<cfelseif structKeyExists(form, "addMatrixColumn") >
+									<cfset variables.arrStQuestionMatrices = oAnswerMatrices.insertTableColumn(form.addMatrixColumn)>
+									<cfset session.arrStQuestionMatrices = variables.arrStQuestionMatrices>
+								<cfelseif structKeyExists(form, "deleteMatrixColumn") AND NOT arrayLen(errors)>
+									<cfset variables.arrStQuestionMatrices = oAnswerMatrices.deleteTableColumn(form.deleteMatrixColumn)>
+									<cfset session.arrStQuestionMatrices = variables.arrStQuestionMatrices>
 								<cfelseif structKeyExists(session, "arrStQuestionMatrices") >
-									<cfset variables.arrStQuestionMatrices = session.arrStQuestionMatrices>
+											<cfset variables.arrStQuestionMatrices = session.arrStQuestionMatrices>
+									<cfelse>
+											<cfset variables.arrStQuestionMatrices = arrayNew(1)>
+									</cfif>
 
-								<cfelse>
-									<cfset variables.arrStQuestionMatrices = arrayNew(1)>
-								</cfif>
+								<!--- 	<cfdump  var="#variables.arrStQuestionMatrices#">
+									<cfdump  var="#arraylen(variables.arrStQuestionMatrices)#">
+									 --->
 								<cfif arraylen(variables.arrStQuestionMatrices) LT 1>
 									<table border="0">
 										<tr><td><font face="arial" size="2">Number of rows:</font></td>
@@ -94,14 +109,26 @@
 								</td>
               </tr>
               <tr>
-								<td><input vspace="2px" hspace="3" type="submit" name="addMatrixCell" id="addMatrixCell" value="Update Cell" class="buttnLg">
+								<td>
+									<input vspace="2px" hspace="3" type="submit" name="addMatrixCell" id="addMatrixCell" value="Update Cell" class="buttnLg">
+									<span style="display: none">
+										<input type="submit" name="addMatrixRow"
+														id="addMatrixRow" value="">
+										<input type="submit" name="deleteMatrixRow"
+														id="deleteMatrixRow" value="">
+										<input type="submit" name="addMatrixColumn"
+														id="addMatrixColumn" value="">
+										<input type="submit" name="deleteMatrixColumn"
+														id="deleteMatrixColumn" value="">
+								</span>
 								</td>
 								<td><input vspace="2px" hspace="3" type="submit" 
-									onClick="return confirmDeteteTable();" name="deleteMatrixTable" value="Delete Table" class="buttnLg">
+									onClick="return fncConfirmDeleteTable();" name="deleteMatrixTable" value="Delete Table" class="buttnLg">
 								</td>
 							</tr>
-
-              <!--- display contents of arrStQuestionMatrices (if any) --->
+							 <!---<cfdump var="#variables.arrStQuestionMatrices#">
+							<cfdump  var="#ArrayLen(variables.arrStQuestionMatrices)#">
+              display contents of arrStQuestionMatrices (if any) --->
               <cfif ArrayLen(variables.arrStQuestionMatrices) GT 0>
                 <tr>
                   <td colspan="2">
@@ -110,34 +137,94 @@
 												<cfset currRowNum = 0>
 												<cfset currCellNum = 0>
 												<cfloop from="1" to="#arrayLen(variables.arrStQuestionMatrices)#" index="i">
+													<cfif i eq 1>
+														<tr>
+															<cfset intColLength = oAnswerMatrices.getColumnCount()>
+															<cfloop from="0" to="#intColLength#" index="j">
+																<td style="min-width:65px; 
+																					text-align:center;
+																					font-weight:bold;
+																					font-size:20px;
+																					cursor: pointer;">
+																	<span style="color:green;"
+																				onmouseover="style='background-color: ccc;'"
+																				onmouseout="style='background-color: white;color:green;'"
+																				onClick="fncSubmitForm('addMatrixColumn', #j#);" 
+																				title = "Add Column After">+
+																	</span>
+																	<cfif j GT 0>
+																		<span style="color:red;min-width:65px;" 
+																					onmouseover="style='background-color: ccc;'"
+																					onmouseout="style='background-color: white;color:red;'"
+																					onClick="fncSubmitForm('deleteMatrixColumn', #j#);" 
+																			title = "Delete Column ">--
+																		</span>
+																	</cfif>
+																</td>
+															</cfloop>
+														</tr>
+													</cfif>
 													<cfif variables.arrStQuestionMatrices[i]['rowNum'] NEQ currRowNum>
 														<cfif currRowNum GT 0>
 															</tr>
+															
 														</cfif>
 														<cfset currRowNum = variables.arrStQuestionMatrices[i]['rowNum']>
 														<cfset currCellNum = 0>
 														<tr>
+															<td style="min-width:65px; 
+																	text-align:center;
+																	font-weight:bold;
+																	font-size:20px;
+																	cursor: pointer;">
+																<span style="color:green;"
+																			onmouseover="style='background-color: ccc;'"
+																			onmouseout="style='background-color: white;color:green;'"
+																			onClick="fncSubmitForm('addMatrixRow', #currRowNum#);" 
+																			title = "Add New Line Below">+
+																</span>
+																<span style="color:red;min-width:65px;" 
+																			onmouseover="style='background-color: ccc;'"
+																			onmouseout="style='background-color: white;color:red;'"
+																			onClick="fncSubmitForm('deleteMatrixRow', #currRowNum#);" 
+																	title = "Delete line ">--
+																</span>
+															</td>
+															
 													</cfif>
 													<cfset currCellNum = currCellNum + 1>
 													<td 
-															id = "tdWorkingTableCellId#currRowNum##currCellNum#"
-															name = "tdWorkingTableCell" data-dataType = "#variables.arrStQuestionMatrices[i]['cellDataType']#" 
-															onClick="fncSetSelect(#currRowNum#, #currCellNum#)">
+															id = "tdWorkingTableCellId#currRowNum##currCellNum #"
+															name = "tdWorkingTableCell" data-dataType = 
+																		"#variables.arrStQuestionMatrices[i]['cellDataType']#" 
+															onClick="fncSetSelect(#currRowNum#, #currCellNum#)"
+														<cfif (structKeyExists(form, "addMatrixRow") AND
+																			form.addMatrixRow + 1 == arrStQuestionMatrices[i]['rowNum'])  OR
+																(structKeyExists(form, "addMatrixColumn") AND
+																			form.addMatrixColumn + 1 == arrStQuestionMatrices[i]['colNum'])>
+															style="color:green;background-color: ccc;font-weight:bold;cursor: pointer;"
+														<cfelse>
+															style = "cursor: pointer;"
+														</cfif>>
 														<!--- display cell by cellDataType (title, integer, varchar, text) --->
 														<cfif variables.arrStQuestionMatrices[i]['cellDataType'] EQ "title">
 															<font face="arial" size="2"><b>#arrStQuestionMatrices[i]['cellTitle']#</b></font>
 														</cfif>
 														<cfif variables.arrStQuestionMatrices[i]['cellDataType'] EQ "integer">
-															<input type="text" class="adminFormField" size="11" value="" placeholder="9999" />
+															<input type="text" class="adminFormField" size="11"
+															style = "cursor: pointer;" value="" placeholder="9999" />
 														</cfif>
 														<cfif variables.arrStQuestionMatrices[i]['cellDataType'] EQ "dollar">
-															<input type="text" class="adminFormField" size="15" value=""  placeholder="$9,999.99" />
+															<input type="text" class="adminFormField" size="15"
+															style = "cursor: pointer;" value=""  placeholder="$9,999.99" />
 														</cfif>
 														<cfif variables.arrStQuestionMatrices[i]['cellDataType'] EQ "varchar">
-															<input type="text" class="adminFormField" size="25" value="" placeholder="varchar"/>
+															<input type="text" class="adminFormField" size="25"
+															style = "cursor: pointer;" value="" placeholder="varchar"/>
 														</cfif>
 														<cfif variables.arrStQuestionMatrices[i]['cellDataType'] EQ "text">
-															<textarea rows="2" cols="50" maxlength="1500">textarea</textarea>
+															<textarea rows="2" cols="50" maxlength="1500" 
+															style = "cursor: pointer;">textarea</textarea>
 														</cfif>
 													</td>
 												</cfloop>

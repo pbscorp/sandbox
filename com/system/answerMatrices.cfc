@@ -105,8 +105,8 @@
   </cffunction>
 
   <cffunction name="getRowCount" access="public" output="false" returntype="numeric">
-    <cfset intColCount = structFind(session.arrStQuestionMatrices[arrayLen(session.arrStQuestionMatrices)], 'rowNum')>
-    <cfreturn intColCount>
+    <cfset intRowCount = structFind(session.arrStQuestionMatrices[arrayLen(session.arrStQuestionMatrices)], 'rowNum')>
+    <cfreturn intRowCount>
   </cffunction>
 
   <cffunction name="getArryKey" access="public" output="false" returntype="any">
@@ -123,30 +123,199 @@
     <cfscript>
       intTotRows = val(arguments.a_totRows);
       intTotCols = val(arguments.a_totCols);
-      myArrStQuestionMatrices = arrayNew(1);
-      i = 0;
-      for (rowNum=1; rowNum <= intTotRows; rowNum++) {
-        for (colNum=1; colNum <= intTotCols; colNum++) {
-          i = i + 1;
-          myArrStQuestionMatrices[i]=structNew();
-          myArrStQuestionMatrices[i]['rowNum']=rowNum;
-          myArrStQuestionMatrices[i]['colNum']=colNum;
-          if (rowNum == 1 || colNum == 1 ) { 
-            myArrStQuestionMatrices[i]['cellDataType']="title";
-            if (colNum == 1) {
-              myArrStQuestionMatrices[i]['cellTitle']=" Row#rowNum#";
-            } else {
-              myArrStQuestionMatrices[i]['cellTitle']=" Column#colNum#";
-            }
-            
-          } else {
-            myArrStQuestionMatrices[i]['cellDataType']="dollar";
-            myArrStQuestionMatrices[i]['cellTitle']="";
-          }
+      var intIndex = 1;
+      var intRowNum = 1
+      var myArrStQuestionMatrices = arrayNew(1);
+      for (intRowNum = 1; intRowNum <= intTotRows; intRowNum++) {
+        arrayAppend(myArrStQuestionMatrices, fncBuildTableRow(intIndex, intRowNum, intTotCols), "true");
+        intIndex = intIndex + intTotCols;
+      }
+      var intMax = arrayLen(myArrStQuestionMatrices);
+      var i = 1;
+      for (i = 1; i <= intMax; i++) {
+        if (!(ArrayIsDefined(myArrStQuestionMatrices, i))  ) {
+            ArrayDeleteAt(myArrStQuestionMatrices, i)
+            intMax--;
+            i--;
         }
       }
-    return myArrStQuestionMatrices;
+    return fncRemoveEmptyEntries(myArrStQuestionMatrices);;
+    </cfscript>
+  </cffunction>
+
+  <cffunction name="fncRemoveEmptyEntries" access="public" output="false" returntype="any">
+    <cfargument name="a_myArrStQuestionMatrices" type="array" required="true" />
+    <cfscript>
+      var myArrStQuestionMatrices = a_myArrStQuestionMatrices;
+      var intMax = arrayLen(myArrStQuestionMatrices);
+      var i = 1;
+      for (i = 1; i <= intMax; i++) {
+        if (!(ArrayIsDefined(myArrStQuestionMatrices, i))  ) {
+            ArrayDeleteAt(myArrStQuestionMatrices, i)
+            intMax--;
+            i--;
+        }
+      }
+      return myArrStQuestionMatrices;
+    </cfscript>
+  </cffunction>
+      
+
+  <cffunction name="fncBuildTableRow" access="public" output="false" returntype="any">
+      <cfargument name="a_intIndex" type="numeric" required="true" />
+      <cfargument name="a_intRow" type="numeric" required="true" />
+      <cfargument name="a_intColCount" type="numeric" required="true" />
+      <cfscript>
+        var intRowNum = arguments.a_intRow;
+        var intColCount = a_intColCount;
+        var intColNum = 1;
+        var i = a_intIndex;
+        //var i = 3;
+        var myArrStQuestionMatrices = arrayNew(1);
+        for (intColNum=1; intColNum <= intColCount; intColNum++) {
+          myArrStQuestionMatrices[i]=fncAddColumnCell(intRowNum, intColNum);
+          i = i + 1;
+        }
+      return myArrStQuestionMatrices;
     </cfscript>
       
+    
   </cffunction>
-</cfcomponent>
+    
+  <cffunction name="fncAddColumnCell" access="public" output="false" returntype="any">
+    <cfargument name="a_intRow" type="numeric" required="true" />
+    <cfargument name="a_intCol" type="numeric" required="true" />
+    <cfscript>
+      var intRowNum = arguments.a_intRow;
+      var intColNum = arguments.a_intCol;
+      var stcQuestionMatrices=structNew();
+      stcQuestionMatrices['rowNum']=intRowNum;
+      stcQuestionMatrices['colNum']=intColNum;
+      if (intRowNum == 1 || intColNum == 1 ) { 
+        stcQuestionMatrices['cellDataType']="title";
+        if (intRowNum == 1) {
+          stcQuestionMatrices['cellTitle']=" Column#intColNum#";
+        } else {
+          stcQuestionMatrices['cellTitle']=" Row#intRowNum#";
+        }
+        
+      } else {
+        stcQuestionMatrices['cellDataType']="dollar";
+        stcQuestionMatrices['cellTitle']="";
+      }
+      return stcQuestionMatrices;
+    </cfscript>
+  </cffunction>
+
+  <cffunction name="insertTableRow" access="public" output="false" returntype="any">
+    <cfargument name="a_intRow" type="numeric" required="true" />
+    <cfscript>
+      var intRow = val(arguments.a_intRow);
+      var intRowCount = getRowCount();
+      var intColCount = getColumnCount();
+      var intmax = intColCount * intRow;
+      var myNewArrStQuestionMatrices = arrayNew(1);
+      var myArrStQuestionMatrices = session.arrStQuestionMatrices;
+      var i = 1;
+      for (i=1; i <= intmax; i++) {
+        myNewArrStQuestionMatrices[i]=myArrStQuestionMatrices[i];
+      }
+      arrayAppend(myNewArrStQuestionMatrices, fncBuildTableRow(i, intRow + 1, intColCount), "true");
+      var j = i + intColCount;
+      myNewArrStQuestionMatrices = fncRemoveEmptyEntries(myNewArrStQuestionMatrices);
+      intmax = (intColCount * intRowCount) + intColCount;
+      for (j= i + intColCount; j <= intmax; j++) {
+        
+        myNewArrStQuestionMatrices[j]=myArrStQuestionMatrices[i];
+        myNewArrStQuestionMatrices[j]['rowNum']=myArrStQuestionMatrices[i]['rowNum'] + 1;
+        i++;
+      }
+      return fncRemoveEmptyEntries(myNewArrStQuestionMatrices);
+      </cfscript>
+        
+    </cffunction>
+  
+    <cffunction name="deleteTableRow" access="public" output="false" returntype="any">
+      <cfargument name="a_intRow" type="numeric" required="true" />
+      <cfscript>
+        var intRow = val(arguments.a_intRow);
+        var intRowCount = getRowCount();
+        var intColCount = getColumnCount();
+        var intmax = intColCount * (intRow -1);
+        var myNewArrStQuestionMatrices = arrayNew(1);
+        var myArrStQuestionMatrices = session.arrStQuestionMatrices;
+        var i = 1;
+        for (i=1; i <= intmax; i++) {
+          myNewArrStQuestionMatrices[i]=myArrStQuestionMatrices[i];
+        }
+        intmax = (intColCount * intRowCount);
+        for (var j = i + intColCount; j <= intmax; j++) {
+          myNewArrStQuestionMatrices[i]=myArrStQuestionMatrices[j];
+          myNewArrStQuestionMatrices[i]['rowNum']=myArrStQuestionMatrices[j]['rowNum'] - 1;
+          i++;
+        }
+        return fncRemoveEmptyEntries(myNewArrStQuestionMatrices);
+        </cfscript>
+          
+      </cffunction>
+
+      <cffunction name="insertTableColumn" access="public" output="false" returntype="any">
+        <cfargument name="a_intCol" type="numeric" required="true" />
+        <cfscript>
+          var intAfterCol = val(arguments.a_intCol);
+          var intRowCount = getRowCount();
+          var intColCount = getColumnCount();
+          var myNewArrStQuestionMatrices = arrayNew(1);
+          var myArrStQuestionMatrices = session.arrStQuestionMatrices;
+          var ip = 0;
+          var op = 0;
+          for (intCurrRow=1; intCurrRow <= intRowCount; intCurrRow++) {
+            for (intCurrCol=1; intCurrCol <= intAfterCol; intCurrCol++) {
+                ip++;
+                op++;
+                myNewArrStQuestionMatrices[op]=myArrStQuestionMatrices[ip];
+            }
+            op++;
+            myNewArrStQuestionMatrices[op]= fncAddColumnCell(intCurrRow, intAfterCol +1);
+
+            for (intCurrCol=intAfterCol +1; intCurrCol <= intColCount; intCurrCol++) {
+                op++;
+                ip++;
+                myNewArrStQuestionMatrices[op]=myArrStQuestionMatrices[ip];
+                myNewArrStQuestionMatrices[op]['colNum']=intCurrCol + 1;
+            }
+          }
+          return fncRemoveEmptyEntries(myNewArrStQuestionMatrices);
+          //return myNewArrStQuestionMatrices;
+          </cfscript>
+        </cffunction>
+        
+        <cffunction name="deleteTableColumn" access="public" output="false" returntype="any">
+          <cfargument name="a_intCol" type="numeric" required="true" />
+          <cfscript>
+            var intCol = val(arguments.a_intCol);
+            var intRowCount = getRowCount();
+            var intColCount = getColumnCount();
+            var myNewArrStQuestionMatrices = arrayNew(1);
+            var myArrStQuestionMatrices = session.arrStQuestionMatrices;
+            var op = 0;
+            var ip = 0;
+            for (intCurrRow=1; intCurrRow <= intRowCount; intCurrRow++) {
+              for (intCurrCol=1; intCurrCol < intCol; intCurrCol++) {
+                  ip++;
+                  op++;
+                  myNewArrStQuestionMatrices[op]=myArrStQuestionMatrices[ip];
+              }
+              ip++;
+              for (intCurrCol=intCol; intCurrCol < intColCount; intCurrCol++) {
+                  ip++;
+                  op++;
+                  myNewArrStQuestionMatrices[op]=myArrStQuestionMatrices[ip];
+                  myNewArrStQuestionMatrices[op]['colNum']=intCurrCol;
+              }
+            }
+            return myNewArrStQuestionMatrices;
+            </cfscript>
+              
+          </cffunction>
+  </cfcomponent>
