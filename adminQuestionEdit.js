@@ -64,20 +64,20 @@ function toggleDataFields() {
     document.getElementById('matrixCellTitle').focus();
   } else {
     $("#rowMatrixCellTitle").hide();
-    return document.getElementById('addMatrixCell').click();
+    document.getElementById('addMatrixCell').click();
   }
 }
+let g_cntlKeyPressed = false;
 const g_arrFormRowCols = [];
 function fncHighlightCell(a_cntlKeyPressed){
-  let intCol = document.getElementById('matrixCellColNum').value;
-  let intRow = document.getElementById('matrixCellRowNum').value;
+    let intCol = document.getElementById('matrixCellColNum').value;
+    let intRow = document.getElementById('matrixCellRowNum').value;
   if (intRow.length < 1 || intCol.length < 1) {
     return;
   }
   if (!a_cntlKeyPressed) {
     let arrMatrixTable = document.getElementsByName('tdWorkingTableCell');
     for (let i=0; i < arrMatrixTable.length; i++) {
-      arrMatrixTable[i].style.backgroundColor="white";
       arrMatrixTable[i].style.border="thin solid white";
       g_arrFormRowCols.length  = 0;
     }
@@ -105,11 +105,37 @@ function isKeyPressed(event) {
    return false;
   }
 }
-      
-function fncSetSelect(g_intRow, g_intCol,a_cntlKeyPressed){
-  document.getElementById('matrixCellRowNum').value=g_intRow;
-  document.getElementById('matrixCellColNum').value=g_intCol;
-  fncHighlightCell(a_cntlKeyPressed)
+function fncSetSelect(a_intRow, a_intCol, a_matrixCellTitle, a_cntlKeyPressed){
+  document.getElementById('matrixCellRowNum').value=a_intRow;
+  document.getElementById('matrixCellColNum').value=a_intCol;
+  document.getElementById('matrixCellTitle').value=a_matrixCellTitle.trim();
+  strDataType = document.getElementById('tdWorkingTableCellId' + a_intRow.toString() + a_intCol.toString()).getAttribute("data-dataType");
+  let eleSelectDropdown = document.getElementById('matrixCellDataType');
+  let strSelectedOption = eleSelectDropdown.value;
+  console.log(strDataType);
+  fncHighlightCell(a_cntlKeyPressed);
+  if (strDataType == 'title') {
+    $("#rowMatrixCellTitle").show();
+    //fncCloseDataTypeSelect();
+    document.getElementById('matrixCellTitle').focus();
+  } else {
+    $("#rowMatrixCellTitle").hide();
+    //fncOpenDataTypeSelect();
+    document.getElementById('matrixCellTitle').value="";
+    document.getElementById('matrixCellDataType').click();
+  }
+}
+function fncOpenDataTypeSelect() {
+    let eleSelectDropdown = document.getElementById('matrixCellDataType');
+    document.getElementById('spanTitleDataType').style.display = "none";
+    eleSelectDropdown.style.display = "block";
+    eleSelectDropdown.size = eleSelectDropdown.options.length;
+}
+function fncCloseDataTypeSelect() {
+    let eleSelectDropdown = document.getElementById('matrixCellDataType');
+    eleSelectDropdown.style.display = "none";
+    document.getElementById('spanTitleDataType').style.display = "inline";
+    
 }
 function fncSubmitForm(a_strTransaction, a_intRowOrCol) {
   fncFillRequiredCellsToPassEdit();
@@ -121,7 +147,6 @@ function fncSubmitForm(a_strTransaction, a_intRowOrCol) {
   document.getElementById(a_strTransaction).value=a_intRowOrCol;
   document.getElementById(a_strTransaction).click();
 }
-
 function fncConfirmDeleteTable() {
   fncFillRequiredCellsToPassEdit();
   if (!confirm('Are you sure you wish to delete the working-table?') ) {

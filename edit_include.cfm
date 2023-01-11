@@ -62,9 +62,12 @@
 										</tr>
 									</table>
 								<cfelse>
-
+									<cfset strLandingRow = 1>
+									<cfset strLandingColumn = 1>
 								<cfif structKeyExists(form, "addMatrixCell") AND NOT arrayLen(errors)><!--- if no errors, add cell to arrStQuestionMatrices --->
 									<cfset oAnswerMatrices.updateTableCell(aryStcEditRowColumn, form.matrixCellDataType, form.matrixCellTitle)>
+									<cfset strLandingRow = form.matrixCellRowNum>
+									<cfset strLandingColumn = form.matrixCellColNum>
 								</cfif>
             <table border="0" id="matrixTable">
               <tr><td><font face="arial" size="2">Row Number:</font></td>
@@ -83,6 +86,7 @@
               </tr>
               <tr><td><font face="arial" size="2">Cell Data Type:</font></td>
                   <td>
+										<span id="spanTitleDataType" style="display:none"> Title</span>
           	        <select name="matrixCellDataType" id="matrixCellDataType" class="selectBoxText" 
 														required style="width:400px; font-weight:bold; color:284369;"
 														onchange="toggleDataFields();">
@@ -189,17 +193,27 @@
 															
 													</cfif>
 													<cfset currCellNum = currCellNum + 1>
+													<cfset strMatrixRowTitle = arrStQuestionMatrices[i]['cellTitle']>
+													<cfset isNewRowOrColumn = false>
+													<cfif (structKeyExists(form, "addMatrixRow") AND
+																		form.addMatrixRow + 1 == arrStQuestionMatrices[i]['rowNum'])>
+														<cfset strLandingRow = arrStQuestionMatrices[i]['rowNum']>
+														<cfset strLandingColumn = 1>
+														<cfset isNewRowOrColumn = true>
+												<cfelseif	(structKeyExists(form, "addMatrixColumn") AND
+																		form.addMatrixColumn + 1 == arrStQuestionMatrices[i]['colNum'])>
+														<cfset strLandingRow = 1>
+														<cfset strLandingColumn = arrStQuestionMatrices[i]['colNum']>
+														<cfset isNewRowOrColumn = true>
+												</cfif>
 													<td 
-															id = "tdWorkingTableCellId#currRowNum##currCellNum #"
+															id = "tdWorkingTableCellId#currRowNum##currCellNum#"
 															name = "tdWorkingTableCell" data-dataType = 
-																		"#variables.arrStQuestionMatrices[i]['cellDataType']#"
-															onmousedown="g_cntlKeyPressed = isKeyPressed(event);"
-															onClick="fncSetSelect(#currRowNum#, #currCellNum#, g_cntlKeyPressed)"
-														<cfif (structKeyExists(form, "addMatrixRow") AND
-																			form.addMatrixRow + 1 == arrStQuestionMatrices[i]['rowNum'])  OR
-																(structKeyExists(form, "addMatrixColumn") AND
-																			form.addMatrixColumn + 1 == arrStQuestionMatrices[i]['colNum'])>
-															style="background-color: ccc;font-weight:bold;cursor: pointer;"
+																		"#variables.arrStQuestionMatrices[i]['cellDataType']#" 
+															onmousedown="g_cntlKeyPressed = isKeyPressed(event);" isNewRowOrColumn = "#isNewRowOrColumn#"
+															onClick="fncSetSelect(#currRowNum#, #currCellNum#, '#strMatrixRowTitle#', g_cntlKeyPressed)"
+														<cfif isNewRowOrColumn>
+															style="background-color: ccc;font-weight: bold;cursor: pointer;"
 														<cfelse>
 															style = "cursor: pointer;"
 														</cfif>>
@@ -231,6 +245,13 @@
 							</tr>
 						</cfif>
 					</table>
+				<script>
+					document.addEventListener("load", fncFirstCell());
+					function fncFirstCell () {
+						document.getElementById('tdWorkingTableCellId#strLandingRow##strLandingColumn#').click();
+						document.getElementById('tdWorkingTableCellId#strLandingRow##strLandingColumn#').focus();
+					}
+				</script>
 				</cfif>
 				</cfoutput>
 			</div>
