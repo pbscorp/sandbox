@@ -159,6 +159,13 @@
 																					onClick="fncSubmitForm('deleteMatrixColumn', #j#);" 
 																			title = "Delete Column ">--
 																		</span>
+																	<cfelse>
+																		<span style="color:green;"
+																					onmouseover="style='background-color: ccc;'"
+																					onmouseout="style='background-color: white;color:green;'"
+																					onClick="fncSubmitForm('addMatrixRow', #currRowNum#);" 
+																					title = "Add New Line Below">+
+																		</span>
 																	</cfif>
 																</td>
 															</cfloop>
