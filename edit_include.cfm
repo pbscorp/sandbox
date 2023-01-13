@@ -9,9 +9,11 @@
 <!--- 		  			<cfdump  var="#variables.arrStQuestionMatrices#"> --->
 						<cfoutput>
 							<cfset errors = arrayNew(1)>
+							<cfparam  name="form.rowMatrixCellTitle" default="">
+							<cfparam  name="form.lstEditRowColumns" default="">
 							<cfset aryStcEditRowColumn = arrayNew(1)>
 							<form method="post" name="mainSubNav" id="mainSubNav">
-							<cfif isDefined('form.lstEditRowColumns') AND len(form.lstEditRowColumns)>
+							<cfif len(form.lstEditRowColumns)>
 								<cfset aryStcEditRowColumn = deserializeJSON(form.lstEditRowColumns)>
 								<!-- <cfdump var="#aryStcEditRowColumn#"> -->
 							</cfif>
@@ -89,7 +91,7 @@
 										<span id="spanTitleDataType" style="display:none"> Title</span>
           	        <select name="matrixCellDataType" id="matrixCellDataType" class="selectBoxText" 
 														required style="width:400px; font-weight:bold; color:284369;"
-														onchange="toggleDataFields();">
+														onChange="fncToggleDataFields();">
                       <option value="" cell_type_code="none">Select One</option>
           	          <cfloop list="title,integer,dollar,varchar,text" index="i">
             	          <option value="#i#" cell_type_code="#i#" <cfif IsDefined("form.matrixCellDataType") AND form.matrixCellDataType EQ "#i#">selected</cfif>>#i#</option>
@@ -102,6 +104,7 @@
                 <td><font face="arial" size="2">Cell Title:</font></td>
                 <td><input type="text" name="matrixCellTitle" id="matrixCellTitle" 
 										onFocus="this.select()" class="adminFormField"
+										value="#form.rowMatrixCellTitle#"
                     onChange="document.getElementById('addMatrixCell').click()" size="25" value="" >
 											<font face="arial" size="2">(only if Cell Data Type = 'title')</font>
 								</td>
@@ -200,7 +203,6 @@
 															
 													</cfif>
 													<cfset currCellNum = currCellNum + 1>
-													<cfset strMatrixRowTitle = arrStQuestionMatrices[i]['cellTitle']>
 													<cfset isNewRowOrColumn = false>
 													<cfif (structKeyExists(form, "addMatrixRow") AND
 																		form.addMatrixRow + 1 == arrStQuestionMatrices[i]['rowNum'])>
@@ -218,7 +220,7 @@
 															name = "tdWorkingTableCell" data-dataType = 
 																		"#variables.arrStQuestionMatrices[i]['cellDataType']#" 
 															onmousedown="g_cntlKeyPressed = isKeyPressed(event);" isNewRowOrColumn = "#isNewRowOrColumn#"
-															onClick="fncSetSelect(#currRowNum#, #currCellNum#, '#strMatrixRowTitle#', g_cntlKeyPressed)"
+															onClick="fncSetSelect(#currRowNum#, #currCellNum#)"
 														<cfif isNewRowOrColumn>
 															style="background-color: ccc;font-weight: bold;cursor: pointer;"
 														<cfelse>

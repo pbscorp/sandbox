@@ -57,25 +57,43 @@ function toggleMatrices(answerTypeCode) {
 }
 
 
-function toggleDataFields() {
-  const strDataType = document.getElementById('matrixCellDataType').value;
+let g_cntlKeyPressed = false;
+function fncToggleDataFields() {
+  const eleSelectDropdown = document.getElementById('matrixCellDataType');
+  const strDataType = eleSelectDropdown.options[eleSelectDropdown.selectedIndex].text;
   if (strDataType == "title") {
     $("#rowMatrixCellTitle").show();
     document.getElementById('matrixCellTitle').focus();
+      fncCloseDataTypeSelect();
   } else {
-    $("#rowMatrixCellTitle").hide();
-    document.getElementById('addMatrixCell').click();
+      $("#rowMatrixCellTitle").hide();
+      document.getElementById('addMatrixCell').click();
   }
 }
-let g_cntlKeyPressed = false;
+function fncUpdateCellPlaceHolder() {
+  let intCol = document.getElementById('matrixCellColNum').value;
+  let intRow = document.getElementById('matrixCellRowNum').value;
+    document.getElementById('matrixCellTitle').value=strTitle.trim();
+  try {
+  document.getElementById('tdWorkingTableCellId' + intRow + intCol).getAttribute("data-dataType");
+  document.querySelector('#tdWorkingTableCellId + intRow + intCol input').innerText="";
+  } catch {
+  document.querySelector('#tdWorkingTableCellId + intRow + intCol input').placeholder="";
+  }
+};
+  
 const g_arrFormRowCols = [];
-function fncHighlightCell(a_cntlKeyPressed){
+
+function fncHighlightCell(){ // from change of row or column input or click event of table cell
     let intCol = document.getElementById('matrixCellColNum').value;
     let intRow = document.getElementById('matrixCellRowNum').value;
+    console.log('intRow is now ' + intRow + ' intCol is now ' + intRow);
   if (intRow.length < 1 || intCol.length < 1) {
     return;
   }
-  if (!a_cntlKeyPressed) {
+  // build array of col/rows to pass in the form 
+
+  if (!g_cntlKeyPressed) {
     let arrMatrixTable = document.getElementsByName('tdWorkingTableCell');
     for (let i=0; i < arrMatrixTable.length; i++) {
       arrMatrixTable[i].style.border="thin solid white";
@@ -90,11 +108,22 @@ function fncHighlightCell(a_cntlKeyPressed){
    
   document.getElementById('lstEditRowColumns').value=JSON.stringify(g_arrFormRowCols);
    
-  document.getElementById('tdWorkingTableCellId' + intRow + intCol)
-        .style.border="thin solid red"; 
-  document.querySelector('#matrixCellDataType').value = 
-                document.getElementById('tdWorkingTableCellId' + intRow + intCol).getAttribute("data-dataType");
+  document.getElementById('tdWorkingTableCellId' + intRow + intCol).style.border="thin solid red";
+
+  const eleSelectedMatrixCell = document.getElementById('tdWorkingTableCellId' + intRow.toString() + intCol.toString());
+  const strDataType = eleSelectedMatrixCell.getAttribute("data-dataType");
+
+  console.log('strDataType of selected cell is ' + strDataType);
+
+  document.querySelector('#matrixCellDataType').value = strDataType;
                 
+  console.log('strDataType is now ' + strDataType);
+
+  if (strDataType == 'title') {
+    const strTitle = eleSelectedMatrixCell.innerText;
+    console.log('strTitle is now ' + strTitle);
+    document.getElementById('matrixCellTitle').value=strTitle.trim();
+  }
 }
 
 function isKeyPressed(event) {
@@ -105,36 +134,38 @@ function isKeyPressed(event) {
    return false;
   }
 }
-function fncSetSelect(a_intRow, a_intCol, a_matrixCellTitle, a_cntlKeyPressed){
+function fncSetSelect(a_intRow, a_intCol){// onClick of table column
   document.getElementById('matrixCellRowNum').value=a_intRow;
   document.getElementById('matrixCellColNum').value=a_intCol;
-  document.getElementById('matrixCellTitle').value=a_matrixCellTitle.trim();
-  strDataType = document.getElementById('tdWorkingTableCellId' + a_intRow.toString() + a_intCol.toString()).getAttribute("data-dataType");
-  let eleSelectDropdown = document.getElementById('matrixCellDataType');
-  let strSelectedOption = eleSelectDropdown.value;
-  console.log(strDataType);
-  fncHighlightCell(a_cntlKeyPressed);
-  if (strDataType == 'title') {
+  fncHighlightCell();
+  const eleSelectDropdown = document.getElementById('matrixCellDataType');
+  let strSelectedOption = eleSelectDropdown.options[eleSelectDropdown.selectedIndex].text;
+  eleSelectDropdown.size = eleSelectDropdown.options.length;
+  console.log('strSelectedOption ' + strSelectedOption);
+  if (strSelectedOption == 'title') {
     $("#rowMatrixCellTitle").show();
-    //fncCloseDataTypeSelect();
+    fncCloseDataTypeSelect();
     document.getElementById('matrixCellTitle').focus();
   } else {
-    $("#rowMatrixCellTitle").hide();
-    //fncOpenDataTypeSelect();
-    document.getElementById('matrixCellTitle').value="";
-    document.getElementById('matrixCellDataType').click();
+     $("#rowMatrixCellTitle").hide();
+     fncOpenDataTypeSelect();
+     document.getElementById('matrixCellTitle').value="";
+     document.getElementById('matrixCellDataType').click();
   }
 }
 function fncOpenDataTypeSelect() {
     let eleSelectDropdown = document.getElementById('matrixCellDataType');
-    document.getElementById('spanTitleDataType').style.display = "none";
-    eleSelectDropdown.style.display = "block";
+    //document.getElementById('spanTitleDataType').style.display = "none";
+   // eleSelectDropdown.style.display = "block";
     eleSelectDropdown.size = eleSelectDropdown.options.length;
+    eleSelectDropdown.focus();
 }
 function fncCloseDataTypeSelect() {
     let eleSelectDropdown = document.getElementById('matrixCellDataType');
-    eleSelectDropdown.style.display = "none";
-    document.getElementById('spanTitleDataType').style.display = "inline";
+    //eleSelectDropdown.style.display = "none";
+    //document.getElementById('spanTitleDataType').style.display = "inline";
+    eleSelectDropdown.size = 1;
+    
     
 }
 function fncSubmitForm(a_strTransaction, a_intRowOrCol) {
